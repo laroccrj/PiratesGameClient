@@ -55,13 +55,10 @@ public class Client : MonoBehaviour
             { (int)ServerPackets.gameStart,  GameManager.HandleGameStart },
             { (int)ServerPackets.pirateSpawn,  PirateManager.SpawnPirates },
             { (int)ServerPackets.pirateMove,  PirateManager.UpdatePiratePositions },
-            { (int)ServerPackets.mounted,  MountableManager.MountConfirm },
-            { (int)ServerPackets.dismounted,  MountableManager.DismountConfirm },
             { (int)ServerPackets.boatTransformUpdate,  BoatManager.HandleBoatTransformUpdate },
             { (int)ServerPackets.projectileSpawn,  ProjectileManager.SpawnProjectile },
             { (int)ServerPackets.projectileUpdate,  ProjectileManager.HandleProjectileTransformUpdate },
             { (int)ServerPackets.projectileHit,  ProjectileManager.HandleProjectileHit },
-            { (int)ServerPackets.updateWallHealth,  WallManager.HandleWallHealthUpdate },
         };
 
         Debug.Log("Initialized packets.");

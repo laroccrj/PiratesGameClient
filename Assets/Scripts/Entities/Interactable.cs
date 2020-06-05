@@ -8,18 +8,15 @@ public enum InteractionType
     REPAIR
 }
 
-public enum InteractableType
-{
-    MOOUNTABLE,
-    WALL
-}
-
 public interface Interactable
 {
+    // Right now you can only interact with boat entities, can abstract in the future
+    BoatEntityType BoatEntityType
+    {
+        get;
+    }
 
-    InteractableType GetInteractableType();
-
-    int GetId();
+    BoatEntity GetBoatEntity();
 
     InteractionType[] GetPossibleInteractionTypes();
 }

@@ -185,16 +185,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  mounted: 0
-  boat: {fileID: 0}
-  reverseRotation: 0
-  seat: {fileID: 0}
+  launcher: {fileID: 8194818231526764136}
   body: {fileID: 1642592060233763641}
-  luancher: {fileID: 8194818231526764136}
-  cameraPosition: {fileID: 1500201166403651900}
-  health: 100
-  maxHealth: 100
-  sprite: {fileID: 4876862275526677879}
 --- !u!1 &6037448571875686943
 GameObject:
   m_ObjectHideFlags: 0

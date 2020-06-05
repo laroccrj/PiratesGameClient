@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Node
+interface ProjectileLauncher
 {
-    public Vector2 position;
+    Transform GetLauncher();
 }

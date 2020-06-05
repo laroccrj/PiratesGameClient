@@ -16,12 +16,9 @@ public enum ServerPackets
     boatTransformUpdate,
     pirateSpawn,
     pirateMove,
-    mounted,
-    dismounted,
     projectileSpawn,
     projectileUpdate,
     projectileHit,
-    updateWallHealth,
 }
 
 /// <summary>Sent from client to server.</summary>

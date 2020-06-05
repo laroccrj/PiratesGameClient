@@ -2,22 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Wall : MonoBehaviour, Interactable
+public class Wall : BoatEntity, Interactable
 {
-    public int id;
     public Boat boat;
-    public float health;
-    public float maxHealth;
+    public float health = 100;
+    public float maxHealth = 100;
     public SpriteRenderer sprite;
 
-    public int GetId()
+    public override BoatEntityType BoatEntityType => BoatEntityType.WALL;
+
+    public BoatEntity GetBoatEntity()
     {
-        return this.id;
+        return this;
     }
 
-    public InteractableType GetInteractableType()
+    public override void ReadDataFromPacket(Packet packet)
     {
-        return InteractableType.WALL;
+        this.maxHealth = packet.ReadFloat();
+        this.health = packet.ReadFloat();
     }
 
     public void Update()

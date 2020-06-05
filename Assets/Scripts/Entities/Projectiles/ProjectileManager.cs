@@ -21,13 +21,17 @@ public class ProjectileManager : MonoBehaviour
         int id = packet.ReadInt();
         ProjectileType type = (ProjectileType)packet.ReadInt();
         int boatId = packet.ReadInt();
-        int mountId = packet.ReadInt();
+        int boatEntityId = packet.ReadInt();
+        BoatEntityType boatEntityType = (BoatEntityType) packet.ReadInt();
 
 
         Boat boat = BoatManager.Boats[boatId];
-        Mountable mount = boat.mountables[mountId];
-        Projectile projectile = GameObject.Instantiate<Projectile>(ProjectileByType[(ProjectileType)type], mount.luancher.position, mount.luancher.rotation);
-        projectile.TargetPosition = mount.luancher.position;
+        BoatEntity boatEntity = boat.boatEntitiesByType[boatEntityType][boatEntityId];
+        ProjectileLauncher projectileLauncher = boatEntity as ProjectileLauncher;
+        Transform launcher = projectileLauncher != null ? projectileLauncher.GetLauncher() : boatEntity.transform;
+
+        Projectile projectile = GameObject.Instantiate<Projectile>(ProjectileByType[(ProjectileType)type], launcher.position, launcher.rotation);
+        projectile.TargetPosition = launcher.position;
         Projectiles.Add(id, projectile);
     }
 

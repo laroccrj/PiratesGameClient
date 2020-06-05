@@ -22,12 +22,14 @@ public class PlayerMovement : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(mousePoint, Vector2.zero, 10, 1 << PlayerManager.player.boat.deck.gameObject.layer);
             if (hit.collider != null)
             {
+                Debug.Log(hit.collider.name);
                 if(hit.collider == PlayerManager.player.boat.deck)
                 {
                     SendMovement(PlayerManager.player.boat.deck.transform.InverseTransformPoint(hit.point));
                 }
                 else if (hit.collider.GetComponent<Interactable>() != null)
                 {
+                    Debug.Log("It has an interactable");
                     Interactable interactable = hit.collider.GetComponent<Interactable>();
                     if (Array.Exists<InteractionType>(interactable.GetPossibleInteractionTypes(), el => el == this.interactionType))
                     {
@@ -52,9 +54,10 @@ public class PlayerMovement : MonoBehaviour
     {
         using (Packet packet = new Packet((int)ClientPackets.interactionRequest))
         {
+            Debug.Log("interaction request");
             packet.Write(Client.instance.id);
-            packet.Write(interactable.GetId());
-            packet.Write((int)interactable.GetInteractableType());
+            packet.Write(interactable.GetBoatEntity().id);
+            packet.Write((int)interactable.GetBoatEntity().BoatEntityType);
             packet.Write((int)interactionType);
             ClientSend.SendUDPData(packet);
         }

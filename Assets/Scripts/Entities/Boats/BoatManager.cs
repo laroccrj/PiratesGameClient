@@ -10,6 +10,9 @@ public class BoatManager : MonoBehaviour
     public Boat boatPrefab;
     public Wall wallPrefabBad;
 
+    public static Dictionary<BoatEntityType, BoatEntity> BoatEntityByType = new Dictionary<BoatEntityType, BoatEntity>();
+    public BoatEntity[] BoatEntities;
+
     private void Awake()
     {
         if (instance == null)
@@ -22,7 +25,10 @@ public class BoatManager : MonoBehaviour
             Destroy(this);
         }
 
-        BoatManager.wallPrefab = wallPrefabBad;
+        foreach (BoatEntity boatEntity in BoatEntities)
+        {
+            BoatEntityByType[boatEntity.BoatEntityType] = boatEntity;
+        }
     }
 
     public static void RecieveBoatsFromServer(Packet packet)
@@ -37,51 +43,31 @@ public class BoatManager : MonoBehaviour
             Quaternion rot = packet.ReadQuaternion();
 
             Boat boat = GameObject.Instantiate<Boat>(instance.boatPrefab, pos, rot);
-            boat.id = id;
+            boat.Init(id);
 
-            int mountableCount = packet.ReadInt();
-            for (int mountable_i = 1; mountable_i <= mountableCount; mountable_i++)
+            int boatEntityTypeCount = packet.ReadInt();
+
+            for (int ii = 1; ii <= boatEntityTypeCount; ii++)
             {
-                int mountableId = packet.ReadInt();
-                Mountable.Mountables type = (Mountable.Mountables) packet.ReadInt();
-                float maxHealth = packet.ReadFloat();
-                float health = packet.ReadFloat();
-                bool reverseRotation = packet.ReadBool();
-                Vector3 mountablePos = packet.ReadVector3();
-                Quaternion mountableRot = packet.ReadQuaternion();
+                BoatEntityType boatEntityType = (BoatEntityType)packet.ReadInt();
+                int entityOfTypeCount = packet.ReadInt();
 
-                Mountable mountablePrefab = MountableManager.MountablesByType[type];
-                Mountable mountable = GameObject.Instantiate<Mountable>(mountablePrefab, boat.transform);
-                mountable.id = mountableId;
-                mountable.boat = boat;
-                mountable.maxHealth = maxHealth;
-                mountable.health = health;
-                mountable.reverseRotation = reverseRotation;
-                mountable.transform.localPosition = mountablePos;
-                mountable.transform.localRotation = mountableRot;
-                boat.mountables.Add(mountable.id, mountable);
-            }
-            
-            int wallCount = packet.ReadInt();
-            for (int wall_i = 1; wall_i <= wallCount; wall_i++)
-            {
-                int wallId = packet.ReadInt();
-                float wallMaxHealth = packet.ReadFloat();
-                float wallHealth = packet.ReadFloat();
-                Vector3 wallPos = packet.ReadVector3();
-                Quaternion wallRot = packet.ReadQuaternion();
-                Vector3 wallScale = packet.ReadVector3();
+                for (int iii = 1; iii <= entityOfTypeCount; iii++)
+                {
+                    int entiyId = packet.ReadInt();
+                    Vector3 localPosition = packet.ReadVector3();
+                    Quaternion localRotation = packet.ReadQuaternion();
+                    Vector3 localScale = packet.ReadVector3();
 
-                Wall wall = GameObject.Instantiate<Wall>(wallPrefab, boat.transform);
-                wall.id = wallId;
-                wall.boat = boat;
-                wall.health = wallHealth;
-                wall.maxHealth = wallMaxHealth;
-                wall.health = wallHealth;
-                wall.transform.localPosition = wallPos;
-                wall.transform.localRotation = wallRot;
-                wall.transform.localScale = wallScale;
-                boat.walls.Add(wallId, wall);
+                    BoatEntity entity = Instantiate<BoatEntity>(BoatEntityByType[boatEntityType], boat.transform);
+                    entity.id = entiyId;
+                    entity.transform.localPosition = localPosition;
+                    entity.transform.localRotation = localRotation;
+                    entity.transform.localScale = localScale;
+                    entity.ReadDataFromPacket(packet);
+
+                    boat.boatEntitiesByType[boatEntityType][entity.id] = entity;
+                }
             }
 
             Boats.Add(boat.id, boat);
@@ -90,35 +76,36 @@ public class BoatManager : MonoBehaviour
 
     public static void HandleBoatTransformUpdate(Packet packet)
     {
-        int boatCount = packet.ReadInt();
+        int id = packet.ReadInt();
+        Vector3 pos = packet.ReadVector3();
+        Quaternion rot = packet.ReadQuaternion();
 
-        for (int i = 1; i <= boatCount; i++)
+        if (!BoatManager.Boats.ContainsKey(id))
+            return;
+
+        Boat boat = BoatManager.Boats[id];
+        boat.TargetPosition = pos;
+        boat.transform.rotation = rot;
+
+        int boatEntityTypeCount = packet.ReadInt();
+
+        for (int ii = 1; ii <= boatEntityTypeCount; ii++)
         {
-            int id = packet.ReadInt();
-            Vector3 pos = packet.ReadVector3();
-            Quaternion rot = packet.ReadQuaternion();
+            BoatEntityType boatEntityType = (BoatEntityType)packet.ReadInt();
+            int entityOfTypeCount = packet.ReadInt();
 
-            if (!BoatManager.Boats.ContainsKey(id))
-                continue;
-
-            Boat boat = BoatManager.Boats[id];
-            boat.TargetPosition = pos;
-            boat.transform.rotation = rot;
-
-            int mountableCount = packet.ReadInt();
-            for (int mountable_i = 1; mountable_i <= mountableCount; mountable_i++)
+            for (int iii = 1; iii <= entityOfTypeCount; iii++)
             {
-                int mountableId = packet.ReadInt();
-                float maxHealth = packet.ReadFloat();
-                float health = packet.ReadFloat();
-                Vector3 mountablePos = packet.ReadVector3();
-                Quaternion mountableRot = packet.ReadQuaternion();
+                int entiyyId = packet.ReadInt();
+                Vector3 localPosition = packet.ReadVector3();
+                Quaternion localRotation = packet.ReadQuaternion();
+                Vector3 localScale = packet.ReadVector3();
 
-                Mountable mountable = boat.mountables[mountableId];
-                mountable.maxHealth = maxHealth;
-                mountable.health = health;
-                mountable.body.transform.localPosition = mountablePos;
-                mountable.body.transform.localRotation = mountableRot;
+                BoatEntity entity = boat.boatEntitiesByType[boatEntityType][entiyyId];
+                entity.transform.localPosition = localPosition;
+                entity.transform.localRotation = localRotation;
+                entity.transform.localScale = localScale;
+                entity.ReadDataFromPacket(packet);
             }
         }
     }
